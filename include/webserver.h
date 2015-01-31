@@ -7,6 +7,8 @@
 #include "watchable_fd.h"
 
 
+typedef FastDelegate0<> onTriggerDelegate;
+
 class webrequest {
 public:
     std::string url;
@@ -28,4 +30,6 @@ public:
     webserver(Context &ctx, std::string socket);
     watchable_fd fd();
     void ExecuteRequest();
+
+    onTriggerDelegate onTrigger;
 };

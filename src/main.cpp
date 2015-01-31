@@ -5,16 +5,6 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include <gtkmm.h>
-#include <gtkmm/application.h>
-
-#include <gdk/gdkx.h>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#include <cairo.h>
-#include <cairo-xlib.h>
-
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -25,21 +15,15 @@
 #include "Logging.h"
 #include "watchable_fd.h"
 #include "webserver.h"
-#include "ImageData.h"
+#include "PublicWindow.h"
 
 
 
 using namespace std;
 
-
+PublicWindow win;
 Display *dsp;
-cairo_t *cairo;
-cairo_surface_t *cs;
 vector<watchable_fd> fds;
-cairo_surface_t *image;
-ImageData *data;
-
-
 
 class Photobooth {
 
@@ -47,70 +31,29 @@ class Photobooth {
 
 };
 
-void paint()
-{
-
-    if(image != NULL) {
-        cout << "paint" << endl;
-        float win_width = 800;
-        float win_height = 600;
-        int w = cairo_image_surface_get_width (image);
-        int h = cairo_image_surface_get_height (image);
-        float scale = h > w ? win_width/w : win_height/h;
-        float inverseScale = h > w ? w/win_width : h/win_height;
-
-        cairo_scale (cairo, scale, scale);
-        cairo_set_source_surface (cairo, image, 0, 0);
-        cairo_paint (cairo);
-        cairo_scale (cairo, inverseScale, inverseScale);
-        cairo_set_source_rgb(cairo, 0, 0, 0);
-        cairo_set_line_width(cairo, 4);
-        cairo_rectangle(cairo, 0,0, win_width, win_height);
-        cairo_stroke_preserve(cairo);
-    }
-}
-
-
-void drawImage(cairo_t *cr, std::string src){
-    
-    if(data != NULL)
-        delete(data);
-
-//Load the image from jpg;
-    data = new ImageData();
-    int otherstride = data->Load(src);
-
-    cout << data->width << "x" << data->height << endl;
-    
-
-    int stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, data->width);
-    cout << "stride: " << stride << " - " << otherstride << endl;
-
-    cout << "drawing " << src << endl;
-
-    Logging::instance().Log(LOGGING_INFO, "Main", "Drawing image " + src);
-    image = cairo_image_surface_create_for_data(data->pixbuf, CAIRO_FORMAT_RGB24,
-                      data->width, data->height,
-                      stride);
-
-    //cairo_scale (cr, 0.5, 0.5);
-    paint();
-}
-
 
 void onProcessed(string filename) {
-	drawImage(cairo, "/home/lee/.photobooth/" + filename);
+	win.LoadImage("/home/lee/.photobooth/" + filename);
 }
 
+
+
+void countdown() {
+    for(int i = 5; i >= 0; i--){
+        usleep(1000000);
+        win.setCountdownNumber(i);
+    }
+    win.Clear();
+    
+    Context::Current().cameraService->trigger();
+}
 
 void capture_thread(watchable_fd watchable) {
     
     // throw away all input
     char out[254];
     while (read(watchable.fd, &out, 254) == 254) {}
-
-	Context::Current().cameraService->trigger();
-
+countdown();
 }
 
 void CheckAndCreateDir(const char* path) {
@@ -156,7 +99,7 @@ gid_t name_to_gid(char const *name)
 
 
 
-
+/*
 
 cairo_surface_t *cairo_create_x11_surface(int x, int y)
 {
@@ -189,7 +132,7 @@ cairo_surface_t *cairo_create_x11_surface(int x, int y)
    return sfc;
 }
 
-
+*/
 
 
 
@@ -265,11 +208,14 @@ int main(int argc, char* argv[]) {
 
 //FD for fcgi
     webserver web(ctx, run_dir + "/fcgi.sock");
+    web.onTrigger.bind(&countdown);
+    fds.push_back(web.fd());
 
-    cs = cairo_create_x11_surface(800,600);
-    cairo = cairo_create(cs);
+    win.Init();
+    win.LoadImage("capt0004.jpg");
 
-    int Xfd = ConnectionNumber(dsp);
+
+    int Xfd = ConnectionNumber(win.getX11Display());
 XEvent ev;
     fd_set watched_fds;
     while(1) {
@@ -291,19 +237,19 @@ XEvent ev;
                 }
             }
             if(FD_ISSET(Xfd, &watched_fds)) {
-                XNextEvent(dsp, &ev);
+                XNextEvent(win.getX11Display(), &ev);
                 switch (ev.type) {
                     case MapNotify:
                     case Expose:
                         break;
                     case ConfigureNotify:
-                        paint();
+                        win.Invalidate();
                         break;
                 }
             } 
         }
-        while(XPending(dsp))
-            XNextEvent(dsp, &ev);
+        while(XPending(win.getX11Display()))
+            XNextEvent(win.getX11Display(), &ev);
     }
 
     Logging::instance().Log(LOGGING_INFO, "Main", "Application Exit.");

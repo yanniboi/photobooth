@@ -18,6 +18,9 @@ static void jpgError(j_common_ptr cinfo) {
 
 int ImageData::Load(string filename) {
 
+  if(pixbuf != NULL)
+    free(pixbuf);
+
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
 

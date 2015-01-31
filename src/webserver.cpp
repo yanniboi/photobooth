@@ -89,6 +89,9 @@ void webserver::ExecuteRequest() {
         if (req.url == "/photobooth/click") {
             fname = Context::Current().cameraService->trigger();
             FCGX_FPrintF(_request.out, ("\n\n" + fname).c_str());
+        }else if (req.url == "/photobooth/go") {
+            onTrigger();
+            FCGX_FPrintF(_request.out, ("\n\n" + fname).c_str());
         }
 
         FCGX_Finish_r(&_request);

@@ -28,7 +28,7 @@ static void saveImage(const char *fname, CameraFilePath *path, Camera *cam, GPCo
     // Do the saving
     CameraFile *file;
     
-    int fd = open(string(fname).c_str(),  O_WRONLY | O_CREAT, 0644);
+    int fd = open(string(fname).c_str(),  O_WRONLY | O_CREAT | O_TRUNC, 0644);
     gp_file_new_from_fd(&file, fd);
     gp_camera_file_get(cam, path->folder, path->name,
         GP_FILE_TYPE_NORMAL, file, ctx);
