@@ -64,15 +64,15 @@ void PublicWindow::Invalidate(void) {
 
 void PublicWindow::LoadImage(string src) {
     Logging::instance().Log(LOGGING_INFO, "Public Window", "Loading image " + src);
-    imgData.Load(src);
+    if(imgData.Load(src) > 0){
+        Logging::instance().Log(LOGGING_INFO, "Public Window", "\t" + to_string(imgData.width) + "x" + to_string(imgData.height));
 
-    Logging::instance().Log(LOGGING_INFO, "Public Window", "\t" + to_string(imgData.width) + "x" + to_string(imgData.height));
-
-    int stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, imgData.width);
-    
-    image_surface = cairo_image_surface_create_for_data(imgData.pixbuf, CAIRO_FORMAT_RGB24,
-                      imgData.width, imgData.height,
-                      stride);
+        int stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, imgData.width);
+        
+        image_surface = cairo_image_surface_create_for_data(imgData.pixbuf, CAIRO_FORMAT_RGB24,
+                          imgData.width, imgData.height,
+                          stride);
+    }
     paint();
 }
 
