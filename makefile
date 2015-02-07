@@ -10,7 +10,7 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CFLAGS := -std=c++11 -g `pkg-config gtkmm-3.0 --cflags`  `pkg-config freetype2 --cflags`# -Wall
 LDFLAGS := 
-LIB := -pthread -L lib -lgphoto2 -lfcgi -ljpeg -lgphoto2_port `pkg-config gtkmm-3.0 --libs` -lX11 `pkg-config freetype2 --libs`
+LIB := -pthread -L lib -lgphoto2 -lfcgi -ljpeg -lgphoto2_port `pkg-config gtkmm-3.0 --libs` -lX11 `pkg-config freetype2 --libs` -lcups
 INC := -I include
 
 

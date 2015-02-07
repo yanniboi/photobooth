@@ -37,8 +37,17 @@ void onProcessed(string filename) {
 }
 
 
+void onPrint() {
+    win.Print();
+}
+
+void onClear() {
+    win.Clear();
+}
+
 
 void countdown() {
+    win.setCountdownNumber(5);
     for(int i = 5; i >= 0; i--){
         usleep(1000000);
         win.setCountdownNumber(i);
@@ -209,6 +218,8 @@ int main(int argc, char* argv[]) {
 //FD for fcgi
     webserver web(ctx, run_dir + "/fcgi.sock");
     web.onTrigger.bind(&countdown);
+    web.onClear.bind(&onClear);
+    web.onPrint.bind(&onPrint);
     fds.push_back(web.fd());
 
     win.Init();

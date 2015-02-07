@@ -92,6 +92,12 @@ void webserver::ExecuteRequest() {
         }else if (req.url == "/photobooth/go") {
             onTrigger();
             FCGX_FPrintF(_request.out, ("\n\n" + fname).c_str());
+        }else if (req.url == "/photobooth/clear") {
+            onClear();
+            FCGX_FPrintF(_request.out, ("\n\n" + fname).c_str());
+        }else if (req.url == "/photobooth/print") {
+            onPrint();
+            FCGX_FPrintF(_request.out, ("\n\n" + fname).c_str());
         }
 
         FCGX_Finish_r(&_request);

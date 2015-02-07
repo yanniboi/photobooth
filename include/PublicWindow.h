@@ -47,6 +47,7 @@ public:
     void Invalidate(void);
     void LoadImage(std::string src);
     void Clear(void);
+    void Print();
 
     Display *getX11Display(){
         return x_display;

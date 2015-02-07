@@ -3,6 +3,9 @@
 #include <string>
 
 #include <cairo/cairo-ft.h>
+#include <cairo-ps.h>
+
+#include <cups/cups.h>
 
 #include "Logging.h"
 #include "PublicWindow.h"
@@ -106,13 +109,13 @@ cout << "\t" << (this->width - (w * scale)) << " x " << (this->height - (h * sca
 
 if(countdown_number > 0) {
 // darken bg
-    cairo_set_source_rgba (dc, 0, 0, 0, 0.5);
+    cairo_set_source_rgba (dc, 0, 0, 0, 0.8);
     cairo_rectangle(dc, 0,0, width, height);
     cairo_fill_preserve (dc);
 // draw text
     char cdNum[5];
     snprintf(cdNum, 5, "%d", countdown_number);
-    cairo_set_source_rgb(dc, 0, 255, 0);
+    cairo_set_source_rgb(dc, 255, 255, 255);
     cairo_set_font_face (dc, font_opensans);
     cairo_set_font_size (dc, 400.0);
     cairo_text_extents_t extents;
@@ -132,4 +135,55 @@ if(countdown_number > 0) {
         XEvent ev;
         while(XPending(x_display))
             XNextEvent(x_display, &ev);
+}
+
+#define PAGE_WIDTH 280
+#define PAGE_HEIGHT 420
+
+void PublicWindow::Print() {
+    cout << "Todo: Print" << endl;
+    cairo_surface_t *ps;
+    cairo_t *ps_dc;
+    cairo_matrix_t matrix;
+
+    ps = cairo_ps_surface_create ("output.ps", PAGE_WIDTH, PAGE_HEIGHT);
+    ps_dc = cairo_create(ps);
+    cairo_ps_surface_dsc_comment (ps, "%%PageOrientation: Landscape");
+
+    cairo_translate (ps_dc, 0, PAGE_HEIGHT);
+    cairo_matrix_init (&matrix, 0, -1, 1, 0, 0,  0);
+    cairo_transform (ps_dc, &matrix);
+
+    float scale = imgData.width> imgData.height ? (float)PAGE_WIDTH / (float)imgData.height : (float)PAGE_HEIGHT / (float)imgData.width;
+    cout << scale << endl;
+    cairo_scale (ps_dc, scale, scale);
+    cairo_set_source_surface (ps_dc, image_surface, 0, 0);
+    cairo_paint (ps_dc);
+    cairo_surface_show_page (ps);
+
+    cairo_destroy (ps_dc);
+    cairo_surface_finish (ps);
+    cairo_surface_destroy (ps);
+
+
+    cups_dest_t *dests, *dest;
+    int num_dests = cupsGetDests(&dests);
+    if(num_dests > 0){
+        cout << "Printing to : " << dests->name << endl;
+
+
+        const char *ppd_filename;
+        ppd_filename = cupsGetPPD(dests->name);
+
+        int           num_options;
+        cups_option_t *options;
+        num_options = 0;
+        options     = NULL;
+        num_options = cupsAddOption("media", "Custom.100x150mm", num_options, &options);
+        cupsPrintFile(dests->name, "output.ps", "cairo PS", num_options, options);
+        cupsFreeOptions(num_options, options);
+        cout << "Sent to printer" << endl;
+    }else{
+        cout << "No printers ready" << endl;
+    }
 }

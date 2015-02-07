@@ -7,7 +7,7 @@
 #include "watchable_fd.h"
 
 
-typedef FastDelegate0<> onTriggerDelegate;
+typedef FastDelegate0<> onActionDelegate;
 
 class webrequest {
 public:
@@ -31,5 +31,7 @@ public:
     watchable_fd fd();
     void ExecuteRequest();
 
-    onTriggerDelegate onTrigger;
+    onActionDelegate onTrigger;
+    onActionDelegate onClear;
+    onActionDelegate onPrint;
 };
