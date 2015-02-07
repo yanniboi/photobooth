@@ -28,6 +28,7 @@ class PublicWindow{
     // main image
     ImageData imgData;
     cairo_surface_t *image_surface;
+    cairo_surface_t *buffer_surface;
 
     // countdown
     int countdown_number;

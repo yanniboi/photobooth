@@ -55,6 +55,11 @@ bool PublicWindow::Init() {
     font_opensans = cairo_ft_font_face_create_for_ft_face(fontface_opensans,
         0);
 
+
+    buffer_surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
+                                                 width,
+                                                 height);
+
     return true;
 }
 
@@ -87,6 +92,7 @@ void PublicWindow::Clear(void) {
 
 void PublicWindow::paint(void){
 
+    cairo_t *temp_dc = cairo_create(buffer_surface);
     if(image_surface != NULL) {
         cairo_matrix_t matrix;
         cout << "painting" << endl;
@@ -94,43 +100,47 @@ void PublicWindow::paint(void){
         int h = cairo_image_surface_get_height (image_surface);
         float scale = h > w ? (float)this->height/h : (float)this->width/w ;
 cout << "scale: " << this->height << "/" << h << " = " << scale;
-        cairo_get_matrix(dc, &matrix);
-        cairo_scale (dc, scale, scale);
+        cairo_get_matrix(temp_dc, &matrix);
+        cairo_scale (temp_dc, scale, scale);
 cout << "\t" << (this->width - (w * scale)) << " x " << (this->height - (h * scale)) << endl;
-        cairo_set_source_surface (dc, image_surface, ((this->width - (w * scale)) / scale) / 2, ((this->height - (h * scale)) / scale) / 2);
-        cairo_paint (dc);
-        cairo_set_matrix(dc, &matrix);
+        cairo_set_source_surface (temp_dc, image_surface, ((this->width - (w * scale)) / scale) / 2, ((this->height - (h * scale)) / scale) / 2);
+        cairo_paint (temp_dc);
+        cairo_set_matrix(temp_dc, &matrix);
     }else{
-        cairo_set_source_rgb (dc, 0, 0, 0);
-        cairo_rectangle(dc, 0,0, width, height);
-        cairo_fill_preserve (dc);
+        cairo_set_source_rgb (temp_dc, 0, 0, 100);
+        cairo_rectangle(temp_dc, 0,0, width, height);
+        cairo_fill_preserve (temp_dc);
     }
 
 
 if(countdown_number > 0) {
 // darken bg
-    cairo_set_source_rgba (dc, 0, 0, 0, 0.8);
-    cairo_rectangle(dc, 0,0, width, height);
-    cairo_fill_preserve (dc);
+    cairo_set_source_rgba (temp_dc, 0, 0, 0, 0.8);
+    cairo_rectangle(temp_dc, 0,0, width, height);
+    cairo_fill_preserve (temp_dc);
 // draw text
     char cdNum[5];
     snprintf(cdNum, 5, "%d", countdown_number);
-    cairo_set_source_rgb(dc, 255, 255, 255);
-    cairo_set_font_face (dc, font_opensans);
-    cairo_set_font_size (dc, 400.0);
+    cairo_set_source_rgb(temp_dc, 255, 255, 255);
+    cairo_set_font_face (temp_dc, font_opensans);
+    cairo_set_font_size (temp_dc, 400.0);
     cairo_text_extents_t extents;
-    cairo_text_extents (dc, cdNum, &extents);
+    cairo_text_extents (temp_dc, cdNum, &extents);
     float x = ((float)width / 2)-(extents.width/2 + extents.x_bearing);
     float y = ((float)height / 2)-(extents.height/2 + extents.y_bearing);
     cout << "font " << x << "x" << y << endl;
-    cairo_move_to (dc, x, y);
-    cairo_show_text (dc, cdNum);
+    cairo_move_to (temp_dc, x, y);
+    cairo_show_text (temp_dc, cdNum);
 }
 
-        /*cairo_set_source_rgb(dc, 0, 0, 0);
-        cairo_set_line_width(dc, 4);
-        cairo_rectangle(dc, 0,0, 800, 600);
-        cairo_stroke_preserve(dc);*/
+cairo_set_source_surface (dc, buffer_surface, 0,0);
+cairo_paint(dc);
+cairo_destroy(temp_dc);
+
+        /*cairo_set_source_rgb(v, 0, 0, 0);
+        cairo_set_line_width(temp_dc, 4);
+        cairo_rectangle(temp_dc, 0,0, 800, 600);
+        cairo_stroke_preserve(temp_dc);*/
 
         XEvent ev;
         while(XPending(x_display))
