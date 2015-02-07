@@ -1,0 +1,5 @@
+location ~ /photobooth/.*$ {
+    include fastcgi_params;
+    fastcgi_pass    unix:/var/run/photobooth/fcgi.sock;
+    fastcgi_index    default;
+}
