@@ -1,4 +1,4 @@
-
+	
 #include <iostream>
 #include <string>
 
@@ -16,7 +16,7 @@ bool PublicWindow::Init() {
  
     if ((x_display = XOpenDisplay(NULL)) == NULL) {
         cerr << "Unable to open X11 display" << endl;
-        return false;
+        exit(1);
     }
 
     x_screen = DefaultScreen(x_display);
@@ -101,7 +101,7 @@ cout << "\t" << (this->width - (w * scale)) << " x " << (this->height - (h * sca
         cairo_paint (dc);
         cairo_set_matrix(dc, &matrix);
     }else{
-        cairo_set_source_rgb (dc, 0, 0, 0);
+        cairo_set_source_rgb (dc, 0, 0, 100);
         cairo_rectangle(dc, 0,0, width, height);
         cairo_fill_preserve (dc);
     }

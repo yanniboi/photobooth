@@ -74,7 +74,7 @@ std::string PBCamera::Capture() {
     std::string fname = "";
 
     if (retval != GP_OK) {
-        cerr << "Error triggering camera." << endl;
+        cerr << "Error triggering camera. " << retval << endl;
     }else{
         //Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(path.name));
         //saveImage(&path, _camera, _camera_context);
@@ -135,14 +135,14 @@ std::string PBCamera::Process() {
                 if (idx != std::string::npos) {
                      extension = filename.substr(idx+1);
                 } else {
-                    extension = "jpg";
+                    extension = "JPG";
                 }
 
-                if(extension == "jpg")
+                if(extension == "JPG")
                     jpgfname = (std::to_string(_id) + "-" + std::to_string(sysTime) + "." + extension);
 
                 saveImage(path->name, path, _camera, _camera_context);
-                if(extension == "jpg")
+                if(extension == "JPG")
                     onProcessed(path->name);
                 break;
         }
