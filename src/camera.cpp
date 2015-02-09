@@ -3,6 +3,7 @@
 #include <vector>
 #include <queue>
 #include <string>
+#include <algorithm> // transform
 
 #include "camera.h"
 #include "Logging.h"
@@ -67,17 +68,12 @@ std::string PBCamera::Capture() {
 
     //int retval = gp_camera_trigger_capture (this->_camera, this->_camera_context);
 
-    CameraFilePath path;
-    int retval = gp_camera_trigger_capture   (this->_camera,
-        this->_camera_context
-    );
     std::string fname = "";
 
-    if (retval != GP_OK) {
+    CameraFilePath path;
+    if (gp_camera_trigger_capture (this->_camera, this->_camera_context) != GP_OK) {
         cerr << "Error triggering camera." << endl;
     }else{
-        //Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(path.name));
-        //saveImage(&path, _camera, _camera_context);
         fname = Process();
     }
     //PBCamera::Process();
@@ -133,7 +129,8 @@ std::string PBCamera::Process() {
                 std::string::size_type idx;
                 idx = filename.rfind('.');
                 if (idx != std::string::npos) {
-                     extension = filename.substr(idx+1);
+                    std::string ext = filename.substr(idx+1);
+                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
                 } else {
                     extension = "jpg";
                 }
