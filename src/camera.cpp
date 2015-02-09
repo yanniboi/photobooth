@@ -110,7 +110,7 @@ std::string PBCamera::Process() {
         switch (evtype) {
             case GP_EVENT_CAPTURE_COMPLETE:
                 Logging::instance().Log(LOGGING_VERBOSE, "PBCamera-Processing", "Capture Complete");
-                keepgoing = false;
+//                keepgoing = false;
                 break;
             case GP_EVENT_UNKNOWN:
                 //fprintf(stderr, "Unknown event\n");
@@ -135,14 +135,14 @@ std::string PBCamera::Process() {
                 if (idx != std::string::npos) {
                      extension = filename.substr(idx+1);
                 } else {
-                    extension = "JPG";
+                    extension = "jpg";
                 }
 
-                if(extension == "JPG")
+                if(extension == "jpg")
                     jpgfname = (std::to_string(_id) + "-" + std::to_string(sysTime) + "." + extension);
 
                 saveImage(path->name, path, _camera, _camera_context);
-                if(extension == "JPG")
+                if(extension == "jpg")
                     onProcessed(path->name);
                 break;
         }

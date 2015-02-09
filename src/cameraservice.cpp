@@ -112,6 +112,7 @@ void PBCameraService::init() {
 
         PBCamera *camera = new PBCamera(cam, cam_context);
         Context::Current().cams.push_back(camera);
+        camera->GetConfigWidget("/");
         camera->onProcessed.bind(this, &PBCameraService::_processed);
     }
 
