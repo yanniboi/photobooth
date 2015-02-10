@@ -8,9 +8,9 @@ TARGET := bin/photobooth
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -std=c++11 -g `pkg-config cairomm-1.0 --cflags`  `pkg-config freetype2 --cflags`# -Wall
+CFLAGS := -std=c++11 -g `pkg-config cairomm-1.0 --cflags`  `pkg-config freetype2 --cflags` `pkg-config libgphoto2 --cflags`# -Wall
 LDFLAGS := 
-LIB := -pthread -L lib -lgphoto2 -lfcgi -ljpeg -lgphoto2_port `pkg-config cairomm-1.0 --libs` -lX11 `pkg-config freetype2 --libs` -lcups
+LIB := -pthread -L lib -lfcgi -ljpeg `pkg-config cairomm-1.0 --libs` -lX11 `pkg-config freetype2 --libs` `pkg-config libgphoto2 --libs` -lcups
 INC := -I include
 
 
