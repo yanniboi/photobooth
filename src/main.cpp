@@ -47,6 +47,7 @@ void onClear() {
 
 
 void countdown() {
+    win.Clear();
     win.setCountdownNumber(5);
     for(int i = 5; i >= 0; i--){
         usleep(1000000);
@@ -183,7 +184,8 @@ int main(int argc, char* argv[]) {
 
     // Get home path
     char path[3000];
-    char *home = getenv ("HOME");
+    const char *home = ("/home/" + username).c_str();//getenv ("HOME");
+cout << "home is " << home << endl;
     string working_dir = string(home)  + "/.photobooth/";
     
 

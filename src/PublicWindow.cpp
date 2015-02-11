@@ -107,7 +107,7 @@ cout << "\t" << (this->width - (w * scale)) << " x " << (this->height - (h * sca
         cairo_paint (temp_dc);
         cairo_set_matrix(temp_dc, &matrix);
     }else{
-        cairo_set_source_rgb (temp_dc, 0, 0, 100);
+        cairo_set_source_rgb (temp_dc, 0, 0, 0);
         cairo_rectangle(temp_dc, 0,0, width, height);
         cairo_fill_preserve (temp_dc);
     }

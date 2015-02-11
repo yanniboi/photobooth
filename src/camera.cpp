@@ -57,6 +57,15 @@ PBCamera::PBCamera(Camera *cam, GPContext *ctx) {
     if (gp_camera_get_config (_camera, &_config, _camera_context) < GP_OK) {
         _config = NULL;
     }
+     int internalmemory = 0;
+	SetConfigValue("/main/settings/capturetarget",&internalmemory);
+}
+
+PBCamera::~PBCamera(){
+cout << "Unref camera" << endl;
+//    gp_camera_unref(_camera);
+cout << "Unref context" << endl;
+//    gp_context_unref(_camera_context);
 }
 
 
@@ -75,6 +84,7 @@ std::string PBCamera::Capture() {
 
     if (retval != GP_OK) {
         cerr << "Error triggering camera. " << retval << endl;
+        throw retval;
     }else{
         //Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(path.name));
         //saveImage(&path, _camera, _camera_context);
@@ -85,6 +95,20 @@ std::string PBCamera::Capture() {
     return fname;
 }
 
+
+void PBCamera::Wait(){
+    CameraEventType evtype;
+    const int waittime = 2000;
+    void *data;
+    int retval;
+    while (1) {
+        retval = gp_camera_wait_for_event(this->_camera,
+            waittime, &evtype,
+            &data, this->_camera_context);
+        if(retval == GP_EVENT_TIMEOUT)
+            break;
+    }
+}
 
 
 std::string PBCamera::Process() {

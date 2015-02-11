@@ -79,17 +79,33 @@ std::string PBCameraService::trigger(void) {
     int i;
     std::string fname = "";
     for (i=0; i < Context::Current().cams.size(); i++) {
-        fname = Context::Current().cams[i]->Capture();
+        try{
+            fname = Context::Current().cams[i]->Capture();
+        }catch(int i){
+            //error with camera,  first lets try waiting on device, then restart it.
+//            try{
+//                Context::Current().cams[i]->Wait();
+//                fname = Context::Current().cams[i]->Capture();
+//            }catch(int ex2){
+                 //totally remove the camera.
+                 std::cout << "caught ex" << std::endl;
+//                 delete(Context::Current().cams[i]);
+//Context::Current().cams.erase(Context::Current().cams.begin() + i);
+//                 findCamera();
+break;
+//            }
+        }
     }
     return fname;
 }
 
 void PBCameraService::init() {
-
-    GPContext *cam_context;
+//    GPContext *cam_context;
     cam_context = gp_context_new(); // Create Context
+    findCamera();
+}
 
-
+void PBCameraService::findCamera() {
     CameraList *list;
     gp_list_new (&list);
     Logging::instance().Log(LOGGING_DEBUG, "Cam Service", "Waiting for camera to be detected.");
