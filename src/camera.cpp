@@ -54,11 +54,11 @@ PBCamera::PBCamera(Camera *cam, GPContext *ctx) {
     this->_camera = cam;
     this->_camera_context = ctx;
 
-    if (gp_camera_get_config (_camera, &_config, _camera_context) < GP_OK) {
-        _config = NULL;
-    }
-     int internalmemory = 0;
-	SetConfigValue("/main/settings/capturetarget",&internalmemory);
+    //if (gp_camera_get_config (_camera, &_config, _camera_context) < GP_OK) {
+    //    _config = NULL;
+    //}
+    int internalmemory = 0;
+    //SetConfigValue("/main/settings/capturetarget",&internalmemory);
 }
 
 PBCamera::~PBCamera(){
@@ -77,16 +77,16 @@ std::string PBCamera::Capture() {
     //int retval = gp_camera_trigger_capture (this->_camera, this->_camera_context);
 
     CameraFilePath path;
-    int retval = gp_camera_trigger_capture   (this->_camera,
-        this->_camera_context
-    );
+    int retval = gp_camera_trigger_capture   (this->_camera, this->_camera_context );
+//    int retval = gp_camera_capture_image(this->_camera, this->_camera_context);
     std::string fname = "";
 
     if (retval != GP_OK) {
         cerr << "Error triggering camera. " << retval << endl;
+        Logging::instance().Log(LOGGING_ERROR, "PBCamera-Capture", "Error triggering camera " + std::to_string(retval));
         throw retval;
     }else{
-        //Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(path.name));
+        Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(path.name));
         //saveImage(&path, _camera, _camera_context);
         fname = Process();
     }
@@ -102,6 +102,7 @@ void PBCamera::Wait(){
     void *data;
     int retval;
     while (1) {
+        Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Waiting for camera events");
         retval = gp_camera_wait_for_event(this->_camera,
             waittime, &evtype,
             &data, this->_camera_context);

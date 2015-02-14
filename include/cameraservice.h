@@ -4,7 +4,7 @@
 
 class PBCameraService {
 private:
-    GPContext *cam_context;
+//    GPContext *cam_context;
     void _processed(std::string filename);
     void findCamera();
 public:

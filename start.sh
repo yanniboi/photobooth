@@ -1,2 +1,2 @@
 export DISPLAY=:0
-startx /home/lee/photobooth/bin/photobooth
+xinit /home/lee/photobooth/bin/photobooth

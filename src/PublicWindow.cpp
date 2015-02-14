@@ -27,7 +27,7 @@ bool PublicWindow::Init() {
     height = HeightOfScreen(scr);
 
     x_win = XCreateSimpleWindow(x_display, DefaultRootWindow(x_display),
-      0, 0, width, height, 0, 0, 255);
+      0, 0, width, height, 0, 0, 0);
 
     XSelectInput(x_display, x_win, 
         ExposureMask | KeyPressMask | KeyReleaseMask | PointerMotionMask |

@@ -63,7 +63,7 @@ void capture_thread(watchable_fd watchable) {
     // throw away all input
     char out[254];
     while (read(watchable.fd, &out, 254) == 254) {}
-countdown();
+//countdown();
 }
 
 void CheckAndCreateDir(const char* path) {
@@ -225,7 +225,7 @@ cout << "home is " << home << endl;
     fds.push_back(web.fd());
 
     win.Init();
-    win.LoadImage("capt0004.jpg");
+//    win.LoadImage("capt0004.jpg");
 
 
     int Xfd = ConnectionNumber(win.getX11Display());
