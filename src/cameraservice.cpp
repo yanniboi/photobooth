@@ -12,13 +12,13 @@ static GPPortInfoList       *portinfolist;
 static CameraAbilitiesList  *abilities;
 
 
-void error_func (GPContext *context, const char *format, va_list args, void *data) {
+static void error_func (GPContext *context, const char *format, va_list args, void *data) {
  fprintf  (stderr, "*** Contexterror ***\n");
  vfprintf (stderr, format, args);
  fprintf  (stderr, "\n");
 }
 
-void message_func (GPContext *context, const char *format, va_list args, void *data) {
+static void message_func (GPContext *context, const char *format, va_list args, void *data) {
  vprintf (format, args);
  printf ("\n");
 }
@@ -84,6 +84,8 @@ int PBCameraService::open_camera (Camera ** camera, const char *model, const cha
         if (ret < GP_OK) return ret;
         ret = gp_camera_set_port_info (*camera, pi);
         if (ret < GP_OK) return ret;
+
+    gp_port_info_list_free (portinfolist);
     return GP_OK;
 }
 
@@ -139,16 +141,15 @@ void PBCameraService::findCamera() {
                 Logging::instance().Log(LOGGING_ERROR, "findCamera", gp_port_result_as_string(retval));
                 Logging::instance().Log(LOGGING_ERROR, "findCamera", gp_result_as_string(retval));
             } else {
-                gp_context_set_error_func(cam_context, (GPContextErrorFunc)error_func, NULL);
-                gp_context_set_message_func(cam_context, (GPContextMessageFunc)message_func, NULL);
+                gp_context_set_error_func(cam_context, (GPContextErrorFunc)error_func, this);
+                gp_context_set_message_func(cam_context, (GPContextMessageFunc)message_func, this);
                 PBCamera *camera = new PBCamera(cam, cam_context);
                 Context::Current().cams.push_back(camera);
-                camera->GetConfigWidget("/");
                 camera->onProcessed.bind(this, &PBCameraService::_processed);
             }
         }
     }
-
+    gp_list_unref(list);
     Logging::instance().Log(LOGGING_DEBUG, "Cam Service", "Finished cam service init.");
 
 }

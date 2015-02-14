@@ -55,11 +55,10 @@ PBCamera::PBCamera(Camera *cam, GPContext *ctx) {
     this->_camera = cam;
     this->_camera_context = ctx;
 
-    //if (gp_camera_get_config (_camera, &_config, _camera_context) < GP_OK) {
-    //    _config = NULL;
-    //}
-    int internalmemory = 0;
-    //SetConfigValue("/main/settings/capturetarget",&internalmemory);
+
+// All this is needed for setting the correct value
+    const char *internalmemory = "Internal RAM";
+    SetConfigValue("/main/settings/capturetarget",(void*)internalmemory);
 }
 
 PBCamera::~PBCamera(){
@@ -223,6 +222,9 @@ CameraWidget *PBCamera::GetConfigWidget(string path) {
 
     CameraWidget *w;
     if (_loop_find_widget(&splitpath, _config, &w)) {
+        char *val;
+        gp_widget_get_value(w, &val);
+        cout << "widget: " << val << endl;
         return w;
     }
     return NULL;
@@ -230,8 +232,12 @@ CameraWidget *PBCamera::GetConfigWidget(string path) {
 
 
 void PBCamera::SetConfigValue(string path, void *value) {
+    gp_camera_get_config (_camera, &_config, _camera_context);
     CameraWidget * widget = GetConfigWidget(path);
     if (widget != NULL) {
+        cout << "setting config" << endl;
         gp_widget_set_value(widget, value);
+        gp_camera_set_config(_camera, _config , _camera_context);
     }
+    gp_widget_free(_config);
 }

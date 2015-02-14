@@ -33,6 +33,6 @@ test: test_target
 test_target: $(TEST_OBJECTS)
 	@echo $(TEST_OBJECTS)
 	@echo "Linking..."
-	$(CC) $^ -o bin/test $(LIB) $(LDFLAGS)
+	$(CC) $^ -o bin/test $(LIB) $(LDFLAGS) -DTEST
 
 .PHONY: clean

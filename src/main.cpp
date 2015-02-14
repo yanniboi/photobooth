@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <X11/Xutil.h>
 
 #include "camera.h"
 #include "cameraservice.h"
@@ -63,7 +64,7 @@ void capture_thread(watchable_fd watchable) {
     // throw away all input
     char out[254];
     while (read(watchable.fd, &out, 254) == 254) {}
-//countdown();
+Context::Current().cameraService->trigger();
 }
 
 void CheckAndCreateDir(const char* path) {
@@ -109,43 +110,6 @@ gid_t name_to_gid(char const *name)
 
 
 
-/*
-
-cairo_surface_t *cairo_create_x11_surface(int x, int y)
-{
-   
-   int screen;
-   cairo_surface_t *sfc;
- 
-   if ((dsp = XOpenDisplay(NULL)) == NULL)
-      exit(1);
-   screen = DefaultScreen(dsp);
-   Window da = XCreateSimpleWindow(dsp, DefaultRootWindow(dsp),
-      0, 0, x, y, 0, 0, 255);
-
-
-
-   XSelectInput(dsp, da, 
-        ExposureMask | KeyPressMask | KeyReleaseMask | PointerMotionMask |
-        ButtonPressMask | ButtonReleaseMask  | StructureNotifyMask 
-        );
-   XMapWindow(dsp, da);
-
-   XFlush(dsp);
-
-   sfc = cairo_xlib_surface_create(dsp, da,
-      DefaultVisual(dsp, screen), x, y);
-   cairo_xlib_surface_set_size(sfc, x, y);
-
-   
- 
-   return sfc;
-}
-
-*/
-
-
-
 
 
 int main(int argc, char* argv[]) {
@@ -178,7 +142,7 @@ int main(int argc, char* argv[]) {
 
     //now lets change our running user
     setgid(ctx.gid);
-    setuid(ctx.uid);
+    //setuid(ctx.uid);
     umask(S_IWOTH);
 
 
@@ -205,6 +169,7 @@ cout << "home is " << home << endl;
 // Init the camera service
     PBCameraService camservice;
     camservice.onProcessed.bind(&onProcessed);
+    ctx.cameraService = &camservice;
     camservice.init();
     
 
@@ -225,7 +190,7 @@ cout << "home is " << home << endl;
     fds.push_back(web.fd());
 
     win.Init();
-//    win.LoadImage("capt0004.jpg");
+    win.LoadImage("capt0004.jpg");
 
 
     int Xfd = ConnectionNumber(win.getX11Display());
@@ -259,7 +224,7 @@ XEvent ev;
                         win.Invalidate();
                         break;
                 }
-            } 
+            }  
         }
         while(XPending(win.getX11Display()))
             XNextEvent(win.getX11Display(), &ev);
