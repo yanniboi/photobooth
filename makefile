@@ -1,6 +1,5 @@
  
-#CC := g++ # This is the main compiler
-CC := arm-linux-gnueabihf-g++-4.8
+CC := g++ # This is the main compiler
 # CC := clang --analyze # and comment out the linker last line for sanity
 SRCDIR := src
 BUILDDIR := build
@@ -14,6 +13,8 @@ LDFLAGS :=
 LIB := -pthread -L lib -lfcgi -ljpeg `pkg-config cairomm-1.0 --libs` -lX11 `pkg-config freetype2 --libs` `pkg-config libgphoto2 --libs` -lcups
 INC := -I include
 
+TEST_OBJECTS := $(BUILDDIR)/test.o $(BUILDDIR)/Logging.o
+
 
 $(TARGET): $(OBJECTS)
 	@echo "Linking..."
@@ -26,5 +27,12 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 clean:
 	@echo " Cleaning..."; 
 	@echo " $(RM) -r $(BUILDDIR) $(TARGET)"; $(RM) -r $(BUILDDIR) $(TARGET)
+
+test: test_target
+
+test_target: $(TEST_OBJECTS)
+	@echo $(TEST_OBJECTS)
+	@echo "Linking..."
+	$(CC) $^ -o bin/test $(LIB) $(LDFLAGS)
 
 .PHONY: clean

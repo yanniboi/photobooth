@@ -12,6 +12,18 @@ static GPPortInfoList       *portinfolist;
 static CameraAbilitiesList  *abilities;
 
 
+void error_func (GPContext *context, const char *format, va_list args, void *data) {
+ fprintf  (stderr, "*** Contexterror ***\n");
+ vfprintf (stderr, format, args);
+ fprintf  (stderr, "\n");
+}
+
+void message_func (GPContext *context, const char *format, va_list args, void *data) {
+ vprintf (format, args);
+ printf ("\n");
+}
+
+
 void PBCameraService::_processed(std::string filename) {
     onProcessed(filename);
 }
@@ -83,25 +95,13 @@ std::string PBCameraService::trigger(void) {
         try{
             fname = Context::Current().cams[i]->Capture();
         }catch(int i){
-            //error with camera,  first lets try waiting on device, then restart it.
-//            try{
-//                Context::Current().cams[i]->Wait();
-//                fname = Context::Current().cams[i]->Capture();
-//            }catch(int ex2){
-switch (i) {
-    case GP_ERROR_CAMERA_BUSY:
-        Context::Current().cams[i]->Wait();
-        break;
-}
+            switch (i) {
+                case GP_ERROR_CAMERA_BUSY:
+                    Context::Current().cams[i]->Wait();
+                    break;
+            }
             Logging::instance().Log(LOGGING_ERROR, "Cam Service", std::string(gp_port_result_as_string(i)));
             Logging::instance().Log(LOGGING_ERROR, "Cam Service", std::string(gp_result_as_string(i)));
-                 //totally remove the camera.
-//                 std::cout << "caught ex" << std::endl;
-//                 delete(Context::Current().cams[i]);
-//Context::Current().cams.erase(Context::Current().cams.begin() + i);
-//                 findCamera();
-break;
-//            }
         }
     }
     return fname;
@@ -133,20 +133,20 @@ void PBCameraService::findCamera() {
         Camera *cam;
         gp_camera_new(&cam);
         
-//        if(open_camera(&cam, name, value, cam_context) == GP_OK) {
-int retval = gp_camera_init(cam, cam_context);
-if(retval != GP_OK) {
-    Logging::instance().Log(LOGGING_ERROR, "findCamera", gp_port_result_as_string(retval));
-    Logging::instance().Log(LOGGING_ERROR, "findCamera", gp_result_as_string(retval));
-} else {
-            PBCamera *camera = new PBCamera(cam, cam_context);
-            Context::Current().cams.push_back(camera);
-            camera->GetConfigWidget("/");
-            camera->onProcessed.bind(this, &PBCameraService::_processed);
-}
-//        } else {
-//            Logging::instance().Log(LOGGING_DEBUG, "findCamera", "Not able to connect to the camera");
-//        }
+        if(open_camera(&cam, name, value, cam_context) == GP_OK) {
+            int retval = gp_camera_init(cam, cam_context);
+            if(retval != GP_OK) {
+                Logging::instance().Log(LOGGING_ERROR, "findCamera", gp_port_result_as_string(retval));
+                Logging::instance().Log(LOGGING_ERROR, "findCamera", gp_result_as_string(retval));
+            } else {
+                gp_context_set_error_func(cam_context, (GPContextErrorFunc)error_func, NULL);
+                gp_context_set_message_func(cam_context, (GPContextMessageFunc)message_func, NULL);
+                PBCamera *camera = new PBCamera(cam, cam_context);
+                Context::Current().cams.push_back(camera);
+                camera->GetConfigWidget("/");
+                camera->onProcessed.bind(this, &PBCameraService::_processed);
+            }
+        }
     }
 
     Logging::instance().Log(LOGGING_DEBUG, "Cam Service", "Finished cam service init.");
