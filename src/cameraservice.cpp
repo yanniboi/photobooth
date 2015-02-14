@@ -5,6 +5,7 @@
 #include "cameraservice.h"
 #include "photobooth.h"
 #include "Logging.h"
+#include <gphoto2/gphoto2.h>
 
 
 static GPPortInfoList       *portinfolist;
@@ -79,17 +80,41 @@ std::string PBCameraService::trigger(void) {
     int i;
     std::string fname = "";
     for (i=0; i < Context::Current().cams.size(); i++) {
-        fname = Context::Current().cams[i]->Capture();
+        try{
+            fname = Context::Current().cams[i]->Capture();
+        }catch(int i){
+            //error with camera,  first lets try waiting on device, then restart it.
+//            try{
+//                Context::Current().cams[i]->Wait();
+//                fname = Context::Current().cams[i]->Capture();
+//            }catch(int ex2){
+switch (i) {
+    case GP_ERROR_CAMERA_BUSY:
+        Context::Current().cams[i]->Wait();
+        break;
+}
+            Logging::instance().Log(LOGGING_ERROR, "Cam Service", std::string(gp_port_result_as_string(i)));
+            Logging::instance().Log(LOGGING_ERROR, "Cam Service", std::string(gp_result_as_string(i)));
+                 //totally remove the camera.
+//                 std::cout << "caught ex" << std::endl;
+//                 delete(Context::Current().cams[i]);
+//Context::Current().cams.erase(Context::Current().cams.begin() + i);
+//                 findCamera();
+break;
+//            }
+        }
     }
     return fname;
 }
 
 void PBCameraService::init() {
+//    GPContext *cam_context;
+//    cam_context = gp_context_new(); // Create Context
+    findCamera();
+}
 
-    GPContext *cam_context;
-    cam_context = gp_context_new(); // Create Context
-
-
+void PBCameraService::findCamera() {
+    GPContext *cam_context = gp_context_new();
     CameraList *list;
     gp_list_new (&list);
     Logging::instance().Log(LOGGING_DEBUG, "Cam Service", "Waiting for camera to be detected.");
@@ -108,11 +133,20 @@ void PBCameraService::init() {
         Camera *cam;
         gp_camera_new(&cam);
         
-        open_camera(&cam, name, value, cam_context);
-
-        PBCamera *camera = new PBCamera(cam, cam_context);
-        Context::Current().cams.push_back(camera);
-        camera->onProcessed.bind(this, &PBCameraService::_processed);
+//        if(open_camera(&cam, name, value, cam_context) == GP_OK) {
+int retval = gp_camera_init(cam, cam_context);
+if(retval != GP_OK) {
+    Logging::instance().Log(LOGGING_ERROR, "findCamera", gp_port_result_as_string(retval));
+    Logging::instance().Log(LOGGING_ERROR, "findCamera", gp_result_as_string(retval));
+} else {
+            PBCamera *camera = new PBCamera(cam, cam_context);
+            Context::Current().cams.push_back(camera);
+            camera->GetConfigWidget("/");
+            camera->onProcessed.bind(this, &PBCameraService::_processed);
+}
+//        } else {
+//            Logging::instance().Log(LOGGING_DEBUG, "findCamera", "Not able to connect to the camera");
+//        }
     }
 
     Logging::instance().Log(LOGGING_DEBUG, "Cam Service", "Finished cam service init.");

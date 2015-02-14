@@ -1,4 +1,4 @@
-
+	
 #include <iostream>
 #include <string>
 
@@ -16,7 +16,7 @@ bool PublicWindow::Init() {
  
     if ((x_display = XOpenDisplay(NULL)) == NULL) {
         cerr << "Unable to open X11 display" << endl;
-        return false;
+        exit(1);
     }
 
     x_screen = DefaultScreen(x_display);
@@ -27,7 +27,7 @@ bool PublicWindow::Init() {
     height = HeightOfScreen(scr);
 
     x_win = XCreateSimpleWindow(x_display, DefaultRootWindow(x_display),
-      0, 0, width, height, 0, 0, 255);
+      0, 0, width, height, 0, 0, 0);
 
     XSelectInput(x_display, x_win, 
         ExposureMask | KeyPressMask | KeyReleaseMask | PointerMotionMask |
@@ -107,7 +107,7 @@ cout << "\t" << (this->width - (w * scale)) << " x " << (this->height - (h * sca
         cairo_paint (temp_dc);
         cairo_set_matrix(temp_dc, &matrix);
     }else{
-        cairo_set_source_rgb (temp_dc, 0, 0, 100);
+        cairo_set_source_rgb (temp_dc, 0, 0, 0);
         cairo_rectangle(temp_dc, 0,0, width, height);
         cairo_fill_preserve (temp_dc);
     }

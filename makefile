@@ -1,5 +1,6 @@
  
-CC := g++ # This is the main compiler
+#CC := g++ # This is the main compiler
+CC := arm-linux-gnueabihf-g++-4.8
 # CC := clang --analyze # and comment out the linker last line for sanity
 SRCDIR := src
 BUILDDIR := build

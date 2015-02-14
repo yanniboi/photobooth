@@ -27,12 +27,14 @@ private:
 public:
 
 	PBCamera(Camera *cam, GPContext *ctx);
+        ~PBCamera();
 
 	std::string Capture();
 	std::string Process();
 
 	void SetConfigValue(std::string path, void *value);
 	CameraWidget *GetConfigWidget(std::string path);
+        void Wait();
 
 	//delegates
 	onProcessedDelegate onProcessed;

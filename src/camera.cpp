@@ -55,9 +55,18 @@ PBCamera::PBCamera(Camera *cam, GPContext *ctx) {
     this->_camera = cam;
     this->_camera_context = ctx;
 
-    if (gp_camera_get_config (_camera, &_config, _camera_context) < GP_OK) {
-        _config = NULL;
-    }
+    //if (gp_camera_get_config (_camera, &_config, _camera_context) < GP_OK) {
+    //    _config = NULL;
+    //}
+    int internalmemory = 0;
+    //SetConfigValue("/main/settings/capturetarget",&internalmemory);
+}
+
+PBCamera::~PBCamera(){
+cout << "Unref camera" << endl;
+//    gp_camera_unref(_camera);
+cout << "Unref context" << endl;
+//    gp_context_unref(_camera_context);
 }
 
 
@@ -68,12 +77,18 @@ std::string PBCamera::Capture() {
 
     //int retval = gp_camera_trigger_capture (this->_camera, this->_camera_context);
 
+    CameraFilePath path;
+    int retval = gp_camera_trigger_capture   (this->_camera, this->_camera_context );
+//    int retval = gp_camera_capture_image(this->_camera, this->_camera_context);
     std::string fname = "";
 
-    CameraFilePath path;
-    if (gp_camera_trigger_capture (this->_camera, this->_camera_context) != GP_OK) {
-        cerr << "Error triggering camera." << endl;
+    if (retval != GP_OK) {
+        cerr << "Error triggering camera. " << retval << endl;
+        Logging::instance().Log(LOGGING_ERROR, "PBCamera-Capture", "Error triggering camera " + std::to_string(retval));
+        throw retval;
     }else{
+        Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(path.name));
+        //saveImage(&path, _camera, _camera_context);
         fname = Process();
     }
     //PBCamera::Process();
@@ -81,6 +96,21 @@ std::string PBCamera::Capture() {
     return fname;
 }
 
+
+void PBCamera::Wait(){
+    CameraEventType evtype;
+    const int waittime = 2000;
+    void *data;
+    int retval;
+    while (1) {
+        Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Waiting for camera events");
+        retval = gp_camera_wait_for_event(this->_camera,
+            waittime, &evtype,
+            &data, this->_camera_context);
+        if(retval == GP_EVENT_TIMEOUT)
+            break;
+    }
+}
 
 
 std::string PBCamera::Process() {
@@ -106,7 +136,7 @@ std::string PBCamera::Process() {
         switch (evtype) {
             case GP_EVENT_CAPTURE_COMPLETE:
                 Logging::instance().Log(LOGGING_VERBOSE, "PBCamera-Processing", "Capture Complete");
-                keepgoing = false;
+//                keepgoing = false;
                 break;
             case GP_EVENT_UNKNOWN:
                 //fprintf(stderr, "Unknown event\n");

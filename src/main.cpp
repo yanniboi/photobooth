@@ -47,6 +47,7 @@ void onClear() {
 
 
 void countdown() {
+    win.Clear();
     win.setCountdownNumber(5);
     for(int i = 5; i >= 0; i--){
         usleep(1000000);
@@ -62,7 +63,7 @@ void capture_thread(watchable_fd watchable) {
     // throw away all input
     char out[254];
     while (read(watchable.fd, &out, 254) == 254) {}
-countdown();
+//countdown();
 }
 
 void CheckAndCreateDir(const char* path) {
@@ -183,7 +184,8 @@ int main(int argc, char* argv[]) {
 
     // Get home path
     char path[3000];
-    char *home = getenv ("HOME");
+    const char *home = ("/home/" + username).c_str();//getenv ("HOME");
+cout << "home is " << home << endl;
     string working_dir = string(home)  + "/.photobooth/";
     
 
@@ -223,7 +225,7 @@ int main(int argc, char* argv[]) {
     fds.push_back(web.fd());
 
     win.Init();
-    win.LoadImage("capt0004.jpg");
+//    win.LoadImage("capt0004.jpg");
 
 
     int Xfd = ConnectionNumber(win.getX11Display());
