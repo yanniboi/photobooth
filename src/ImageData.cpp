@@ -17,6 +17,8 @@ static void jpgError(j_common_ptr cinfo) {
 }
 
 int ImageData::Load(string filename) {
+loaded = false;
+fname = filename;
 
   if(pixbuf != NULL)
     free(pixbuf);
@@ -126,6 +128,7 @@ height = cinfo.output_height;
 
     fclose(infile);
     /* And we're done! */
+loaded = true;
     return row_stride;
 
 }

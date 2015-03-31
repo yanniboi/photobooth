@@ -151,8 +151,9 @@ cairo_destroy(temp_dc);
 #define PAGE_HEIGHT 420
 
 void PublicWindow::Print() {
-    cout << "Todo: Print" << endl;
-    cairo_surface_t *ps;
+if(!imgData.loaded) return;
+    cout << "Printing..." << endl;
+/*    cairo_surface_t *ps;
     cairo_t *ps_dc;
     cairo_matrix_t matrix;
 
@@ -174,14 +175,12 @@ void PublicWindow::Print() {
     cairo_destroy (ps_dc);
     cairo_surface_finish (ps);
     cairo_surface_destroy (ps);
-
+*/
 
     cups_dest_t *dests, *dest;
     int num_dests = cupsGetDests(&dests);
     if(num_dests > 0){
         cout << "Printing to : " << dests->name << endl;
-
-
         const char *ppd_filename;
         ppd_filename = cupsGetPPD(dests->name);
 
@@ -190,7 +189,8 @@ void PublicWindow::Print() {
         num_options = 0;
         options     = NULL;
         num_options = cupsAddOption("media", "Custom.100x150mm", num_options, &options);
-        cupsPrintFile(dests->name, "output.ps", "cairo PS", num_options, options);
+//        cupsPrintFile(dests->name, "output.ps", "cairo PS", num_options, options);
+        cupsPrintFile(dests->name, imgData.fname.c_str(), "cairo PS", num_options, options);
         cupsFreeOptions(num_options, options);
         cout << "Sent to printer" << endl;
     }else{

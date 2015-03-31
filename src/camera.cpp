@@ -21,14 +21,11 @@ static int cameracount;
 static void saveImage(const char *fname, CameraFilePath *path, Camera *cam, GPContext *ctx)
 {
     Logging::instance().Log(LOGGING_VERBOSE, "PBCamera-Saving", "Saving image from camera " + string(path->name));
-
-
     char *cwd = get_current_dir_name();
-    
 
     // Do the saving
     CameraFile *file;
-    
+
     int fd = open(string(fname).c_str(),  O_WRONLY | O_CREAT | O_TRUNC, 0644);
     gp_file_new_from_fd(&file, fd);
     gp_camera_file_get(cam, path->folder, path->name,
@@ -76,7 +73,7 @@ std::string PBCamera::Capture() {
 
     //int retval = gp_camera_trigger_capture (this->_camera, this->_camera_context);
 
-    CameraFilePath path;
+//    CameraFilePath path;
     int retval = gp_camera_trigger_capture   (this->_camera, this->_camera_context );
 //    int retval = gp_camera_capture_image(this->_camera, this->_camera_context);
     std::string fname = "";
@@ -86,7 +83,7 @@ std::string PBCamera::Capture() {
         Logging::instance().Log(LOGGING_ERROR, "PBCamera-Capture", "Error triggering camera " + std::to_string(retval));
         throw retval;
     }else{
-        Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(path.name));
+        //Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(path.name));
         //saveImage(&path, _camera, _camera_context);
         fname = Process();
     }
@@ -148,7 +145,7 @@ std::string PBCamera::Process() {
                 fprintf(stderr, "wait for event FOLDER_ADDED\n");
                 break;
             case GP_EVENT_FILE_ADDED:
-                path = reinterpret_cast<CameraFilePath *>(data);                
+                path = reinterpret_cast<CameraFilePath *>(data);
                 //Get the time for filename
                 const long sysTime = time(0);
 
@@ -160,6 +157,7 @@ std::string PBCamera::Process() {
                 if (idx != std::string::npos) {
                     std::string ext = filename.substr(idx+1);
                     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                    extension = ext;
                 } else {
                     extension = "jpg";
                 }
@@ -168,8 +166,11 @@ std::string PBCamera::Process() {
                     jpgfname = (std::to_string(_id) + "-" + std::to_string(sysTime) + "." + extension);
 
                 saveImage(path->name, path, _camera, _camera_context);
-                if(extension == "jpg")
+cout << "extension " << extension << endl;
+                if(extension == "jpg") {
+                    cout << "firing processed" << endl;
                     onProcessed(path->name);
+                }
                 break;
         }
     }
