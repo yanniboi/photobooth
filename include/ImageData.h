@@ -6,6 +6,8 @@ public:
     long width;
     long height;
     unsigned char *pixbuf;
+    std::string fname;
+    bool loaded;
 
     int Load(std::string filename);
 

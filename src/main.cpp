@@ -50,7 +50,7 @@ void onClear() {
 void countdown() {
     win.Clear();
     win.setCountdownNumber(5);
-    for(int i = 5; i >= 0; i--){
+    for(int i = 4; i >= 0; i--){
         usleep(1000000);
         win.setCountdownNumber(i);
     }
@@ -170,7 +170,8 @@ cout << "home is " << home << endl;
     PBCameraService camservice;
     camservice.onProcessed.bind(&onProcessed);
     ctx.cameraService = &camservice;
-    camservice.init();
+// YAN uncomment for final system
+//    camservice.init();
     
 
 //FD for stdin
@@ -190,7 +191,7 @@ cout << "home is " << home << endl;
     fds.push_back(web.fd());
 
     win.Init();
-    win.LoadImage("capt0004.jpg");
+//    win.LoadImage("capt0004.jpg");
 
 
     int Xfd = ConnectionNumber(win.getX11Display());

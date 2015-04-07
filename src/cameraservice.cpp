@@ -91,6 +91,8 @@ int PBCameraService::open_camera (Camera ** camera, const char *model, const cha
 
 
 std::string PBCameraService::trigger(void) {
+    onProcessed("placeholder.jpg"); //YAN REMOVE THIS AFTER TESTING
+    return "placeholder.jpg";  // FOR YAN TESTING - Remove before final build
     int i;
     std::string fname = "";
     for (i=0; i < Context::Current().cams.size(); i++) {
