@@ -170,11 +170,13 @@ cout << "home is " << home << endl;
     PBCameraService camservice;
     camservice.onProcessed.bind(&onProcessed);
     ctx.cameraService = &camservice;
-    camservice.init();
+    camservice.init();   // Comment me out for non camera debug.
     
 
 //FD for stdin
     
+
+// Redundant (for keyboard debug)
     Logging::instance().Log(LOGGING_VERBOSE, "Main", "Hooking up stdin fd.");
     watchable_fd wfd;
     wfd.fd = 0;
@@ -190,9 +192,10 @@ cout << "home is " << home << endl;
     fds.push_back(web.fd());
 
     win.Init();
-    win.LoadImage("capt0004.jpg");
+    win.LoadImage("capt0004.jpg");  // If image exists use this rather than looking for camera
 
 
+// Continuous update loop to keep the screen updating.
     int Xfd = ConnectionNumber(win.getX11Display());
 XEvent ev;
     fd_set watched_fds;
