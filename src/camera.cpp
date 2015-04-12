@@ -73,9 +73,55 @@ std::string PBCamera::Capture() {
 
     //int retval = gp_camera_trigger_capture (this->_camera, this->_camera_context);
 
+
+/**/
+
+
+
+
+    //int fd = open(string(fname).c_str(),  O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+
+        printf("Capturing.\n");
+
+        int retval = gp_camera_capture(this->_camera, GP_CAPTURE_IMAGE, &camera_file_path, this->_camera_context);
+        if (retval != GP_OK) {
+		printf("  capture failed: %d\n", retval);
+		exit(1);
+	}
+
+        printf("Pathname on the camera: %s/%s\n", camera_file_path.folder, camera_file_path.name);
+
+        Logging::instance().Log(LOGGING_VERBOSE, "PBCamera-Saving", "Saving image from camera " + string(camera_file_path.name));
+        char *cwd = get_current_dir_name();
+
+        fd = open(string(camera_file_path.name).c_str(), O_CREAT | O_WRONLY, 0644);
+
+        retval = gp_file_new_from_fd(&file, fd);
+        if (retval != GP_OK) printf("  gp_file_new failed: %d\n", retval);
+
+        retval = gp_camera_file_get(this->_camera, camera_file_path.folder, camera_file_path.name,
+                     GP_FILE_TYPE_NORMAL, file, this->_camera_context);
+        if (retval != GP_OK) printf("  file_get failed: %d\n", retval);
+
+        printf("Deleting downloaded image.\n");
+        retval = gp_camera_file_delete(this->_camera, camera_file_path.folder, camera_file_path.name,
+                        this->_camera_context);
+        if (retval != GP_OK) printf("  Retval: %d\n", retval);
+
+        gp_file_free(file);
+    close(fd);
+
+    Logging::instance().Log(LOGGING_VERBOSE, "PBCamera-Processing", "Saved image as: " + string(cwd) + "/" + string(camera_file_path.name));
+/**/
+
+
+
 //    CameraFilePath path;
-    int retval = gp_camera_trigger_capture   (this->_camera, this->_camera_context );
+    Logging::instance().Log(LOGGING_ERROR, "PBCamera-Capture", "Trigger before");
+    //retval = gp_camera_trigger_capture(this->_camera, this->_camera_context );
 //    int retval = gp_camera_capture_image(this->_camera, this->_camera_context);
+    Logging::instance().Log(LOGGING_ERROR, "PBCamera-Capture", "Trigger after");
     std::string fname = "";
 
     if (retval != GP_OK) {
@@ -83,13 +129,17 @@ std::string PBCamera::Capture() {
         Logging::instance().Log(LOGGING_ERROR, "PBCamera-Capture", "Error triggering camera " + std::to_string(retval));
         throw retval;
     }else{
-        //Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(path.name));
+        Logging::instance().Log(LOGGING_VERBOSE, "PBCamera", "Captured: " + string(camera_file_path.name));
         //saveImage(&path, _camera, _camera_context);
-        fname = Process();
+
+        //path = reinterpret_cast<CameraFilePath *>(camera_file_path);
+        //saveImage(camera_file_path.name, camera_file_path, this->_camera, this->_camera_context);
+        //fname = Process();
+        onProcessed(camera_file_path.name);
     }
     //PBCamera::Process();
 
-    return fname;
+    return camera_file_path.name;
 }
 
 
